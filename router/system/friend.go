@@ -14,7 +14,6 @@ func (*FriendRouter) InitFriendRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	//获取路由函数
 	var FriendController = controller.ApiGroupApp.FriendGroup
 	{
-		friendRouter.GET("get_user", FriendController.GetUserByToken)
 		friendRouter.POST("friend_create", FriendController.CreateFriend)
 		friendRouter.DELETE("friend_delete", FriendController.DeleteFriend)
 		friendRouter.GET("friend_list", FriendController.GetFriendList)
