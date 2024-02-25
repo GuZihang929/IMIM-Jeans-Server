@@ -18,9 +18,8 @@ func (s SysPublicController) SendEmail(c *gin.Context) {
 	Account := c.PostForm("account")
 	// 检查是否存在相同账号（邮箱）的用户
 	if user.IsUserExists(Account) {
-		//c.JSON(http.StatusBadRequest, gin.H{"error": "已存在相同邮箱的用户"})
+		c.JSON(http.StatusOK, gin.H{"error": "已存在相同邮箱的用户"})
 		global.Logger.Warn("已存在相同邮箱的用户")
-		res.FailWithMessage("已存在相同邮箱的用户", c)
 		return
 	}
 
@@ -28,7 +27,7 @@ func (s SysPublicController) SendEmail(c *gin.Context) {
 	verificationCode := generateVerificationCode()
 	if err := sendVerificationEmail(Account, verificationCode); err != nil {
 		global.Logger.Warn("发送邮箱验证码失败")
-		res.FailWithCode(http.StatusInternalServerError, c)
+		res.FailWithCode(http.StatusOK, c)
 		//c.JSON(http.StatusInternalServerError, gin.H{"error": "发送验证邮件失败"})
 		return
 	}
@@ -37,7 +36,7 @@ func (s SysPublicController) SendEmail(c *gin.Context) {
 	err := user.StoreUserAndCodeInRedis(Account, verificationCode)
 	if err != nil {
 		global.Logger.Warn("在 Redis 中存储用户和验证码失败")
-		res.FailWithCode(http.StatusInternalServerError, c)
+		res.FailWithCode(http.StatusOK, c)
 		//c.JSON(http.StatusInternalServerError, gin.H{"error": "在 Redis 中存储用户和验证码失败"})
 		return
 	}

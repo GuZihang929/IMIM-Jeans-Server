@@ -19,7 +19,7 @@ func (s *PublicRouter) InitPublicRouter(Router *gin.RouterGroup) (R gin.IRoutes)
 		sysRouter.POST("/sendEmail", publicController.SendEmail)
 		sysRouter.POST("/visitorLogin", publicController.VisitorLogin)
 		sysRouter.GET("/visitorLogout", publicController.VisitorLogout)
-		sysRouter.POST("/get_userbyid", publicController.GetUserByUserID)
+
 	}
 	return sysRouter
 }

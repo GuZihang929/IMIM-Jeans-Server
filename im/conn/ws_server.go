@@ -2,12 +2,9 @@ package conn
 
 import (
 	"IM-Server/global"
-	"IM-Server/im"
 	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"strconv"
-
 	"net/http"
 	"time"
 )
@@ -45,14 +42,8 @@ func NewWsServer(options *WsServerOptions) WsServer {
 
 func (ws *WsServer) handleWebSocketRequest(writer http.ResponseWriter, request *http.Request) {
 	//获取用户id
-	userId := request.Header.Get("user_id")
+	userId := request.FormValue("id")
 	ctx := context.WithValue(context.Background(), "userId", userId)
-	i, err2 := strconv.ParseInt(userId, 10, 64)
-	if err2 != nil {
-		global.Logger.Error("userId数据转换出错：" + err2.Error())
-	}
-	//在线人数++，用户存放redis
-	global.Redis.Set(context.Background(), im.GetRedisKeyMain(i), 123, 0)
 
 	conn, err := ws.upgrader.Upgrade(writer, request, nil)
 	if err != nil {

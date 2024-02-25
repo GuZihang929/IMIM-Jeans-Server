@@ -56,6 +56,5 @@ func (SysPublicController) Login(c *gin.Context) {
 	if err != nil {
 		global.Logger.Error(err.Error())
 	}
-
-	res.OkWithData(token, c)
+	c.JSON(http.StatusOK, gin.H{"message": "用户登录成功", "token": token, "user": userInfo})
 }

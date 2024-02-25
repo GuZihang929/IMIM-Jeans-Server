@@ -7,7 +7,7 @@ import (
 )
 
 // GetUserByUserID 用于根据用户ID获取用户信息
-func (SysPublicController) GetUserByUserID(c *gin.Context) {
+func (GroupController) GetUserByUserID(c *gin.Context) {
 	// 从 URL 参数中获取用户 ID
 	userIDStr := c.Query("userID")
 	if userID, err := strconv.ParseInt(userIDStr, 10, 64); err == nil {

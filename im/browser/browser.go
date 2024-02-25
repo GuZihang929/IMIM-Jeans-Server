@@ -5,11 +5,14 @@ import (
 	"IM-Server/im"
 	"IM-Server/im/conn"
 	_json "IM-Server/im/message/json"
+	"IM-Server/im/message/model"
+	"IM-Server/model/system"
 	"IM-Server/utils/timingwheel"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
@@ -128,7 +131,9 @@ func (c *Browser) readMessage() {
 			//心跳检测返回消息
 
 		case msg := <-readChan:
-			fmt.Println(msg)
+			fmt.Println("--------------")
+			fmt.Println(*msg.m)
+			fmt.Println(&msg.m)
 
 			if msg.err != nil {
 				if !c.IsRunning() || msg.err.Error() == "closed" {
@@ -201,7 +206,7 @@ STOP:
 // OfflineHandel 处理离线消息
 func (c *Browser) OfflineHandel(key int64) {
 	fmt.Println("处理离线消息")
-	result, err := global.Redis.HGetAll(context.Background(), im.GetRedisKeyUserOfflineNewMess(key)).Result()
+	result, err := global.Redis.HGetAll(context.Background(), im.GetRedisKeyUserSessionMess(key)).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return
@@ -209,22 +214,59 @@ func (c *Browser) OfflineHandel(key int64) {
 		global.Logger.Error("获取离线消息出错，err" + err.Error())
 	}
 
-	_, err = global.Redis.Del(context.Background(), im.GetRedisKeyUserOfflineNewMess(key)).Result()
-	if err != nil {
-		if err == redis.Nil {
-			return
-		}
-		global.Logger.Error("删除离线消息出错，err" + err.Error())
-	}
+	//_, err = global.Redis.Del(context.Background(), im.GetRedisKeyUserSessionMess(key)).Result()
+	//if err != nil {
+	//	if err == redis.Nil {
+	//		return
+	//	}
+	//	global.Logger.Error("删除离线消息出错，err" + err.Error())
+	//}
 
 	for _, value := range result {
-
 		message := &_json.ComMessage{}
 		err = json.Unmarshal([]byte(value), message)
-		fmt.Println(err)
 		if err != nil {
 			global.Logger.Error("消息反序列化失败，err:" + err.Error())
 			break
+		}
+		s, err := global.Redis.Get(context.Background(), im.GetRedisKeyMain(message.Receiver)).Result()
+		if err != nil {
+			if err == redis.Nil {
+				return
+			}
+			global.Logger.Error("获取用户信息出错，err" + err.Error())
+		}
+		user := &system.User{}
+		err = json.Unmarshal([]byte(s), user)
+		if err != nil {
+			global.Logger.Error("消息反序列化失败，err:" + err.Error())
+			break
+		}
+
+		num, err := global.Redis.Get(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver)).Result()
+		if err != nil {
+			if err == redis.Nil {
+				return
+			}
+			global.Logger.Error("获取消息数目出错，err" + err.Error())
+		}
+
+		i, err := strconv.ParseInt(num, 10, 64)
+
+		mess := &model.Session{
+			Id:      user.UserID,
+			Name:    user.Nickname,
+			Avatar:  user.Avatar,
+			Message: message.Data.Data().(string),
+			Num:     i,
+			Time:    123,
+		}
+		fmt.Println(mess)
+		if err != nil {
+			if err == redis.Nil {
+				return
+			}
+			global.Logger.Error("获取用户信息，err" + err.Error())
 		}
 		c.messages <- message
 	}

@@ -4,9 +4,9 @@ import "fmt"
 
 const (
 	//-------------------------------系统------------------------------------//
-	redisKeyOnlineNum          = "online_num"             // 在线人数
-	redisKeyUserOfflineMessNum = "offline_num_mess:%d_01" // 用户离线消息数目
-	redisKeyUserOfflineNewMess = "offline_new_mess:%d_02" // 用户离线最新消息
+	redisKeyOnlineNum       = "online_num"      // 在线人数
+	redisKeyUserSessionNum  = "session:%d_num"  // 用户离线消息数目
+	redisKeyUserSessionMess = "session:%d_mess" // 用户离线最新消息
 
 	//-------------------------------user------------------------------------//
 	redisKeyMain      = "gamer.{%d}:main"      // user主要信息
@@ -27,13 +27,13 @@ func GetRedisKeyOnlineNum() string {
 }
 
 // 用户离线消息数目
-func GetRedisKeyUserOfflineMessNum(Id int64) string {
-	return fmt.Sprintf(redisKeyUserOfflineMessNum, Id)
+func GetRedisKeyUserSessionNum(Id int64) string {
+	return fmt.Sprintf(redisKeyUserSessionNum, Id)
 }
 
 // 用户离线最新消息
-func GetRedisKeyUserOfflineNewMess(Id int64) string {
-	return fmt.Sprintf(redisKeyUserOfflineNewMess, Id)
+func GetRedisKeyUserSessionMess(Id int64) string {
+	return fmt.Sprintf(redisKeyUserSessionMess, Id)
 }
 
 // user主要信息key值

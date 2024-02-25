@@ -30,7 +30,7 @@ func (GroupController) CreateGroup(c *gin.Context) {
 	// 将新群信息插入数据库
 	err = user.InsertGroup(info)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "群创建失败"})
+		c.JSON(http.StatusOK, gin.H{"error": "群创建失败"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "群创建成功"})

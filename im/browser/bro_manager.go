@@ -80,7 +80,7 @@ func (c *DefaultBrowserManager) BrowserConnected(ctx context.Context, conn conn.
 	//建立长连接的信息初始化
 	go InitWebSocket(connUid)
 
-	//处理离线消息
+	//处理离线消息,创建会话列表
 	go ret.OfflineHandel(connUid)
 	// 开始处理连接的消息
 	ret.Run()
@@ -113,6 +113,14 @@ func (c *DefaultBrowserManager) GetBrowser(count int64) *Browser {
 func Handel(message *_json.ComMessage) error {
 	fmt.Println(message)
 
+	if message.Action == "1" {
+		getBrowser := DefaultManager.GetBrowser(message.Sender)
+		fmt.Println("发送消息")
+		mess := &_json.ComMessage{Action: "1"}
+		getBrowser.messages <- mess
+		fmt.Println("发送成功")
+	}
+
 	switch message.Ver {
 	case 0: //一对一
 
@@ -144,13 +152,13 @@ func Handel(message *_json.ComMessage) error {
 				return err
 			}
 
-			err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserOfflineNewMess(message.Receiver), message.Sender, string(jsonBytes)).Err()
+			err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(message.Receiver), message.Sender, string(jsonBytes)).Err()
 			if err2 != nil {
 				global.Logger.Error("消息放入队列出错，err:" + err2.Error())
 				return err2
 			}
 
-			result, err := global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserOfflineMessNum(message.Receiver), strconv.Itoa(int(message.Sender)), 1).Result()
+			result, err := global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver), strconv.Itoa(int(message.Sender)), 1).Result()
 			if err != nil {
 				global.Logger.Error("redis自增，err:" + err.Error())
 				return err
@@ -180,10 +188,6 @@ func Handel(message *_json.ComMessage) error {
 
 	case 1: //群聊
 
-		//数据处理
-		fmt.Println("开始处理消息")
-		fmt.Println("发布通道：", message.Receiver)
-
 		jsonBytes, err := json.Marshal(*message)
 		if err != nil {
 			global.Logger.Error("JSON 序列化错误:" + err.Error())
@@ -206,13 +210,13 @@ func Handel(message *_json.ComMessage) error {
 					global.Logger.Error("数据转换出错，err:" + err.Error())
 					return err
 				}
-				err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserOfflineNewMess(i), message.Sender, string(jsonBytes)).Err()
+				err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(i), message.Sender, string(jsonBytes)).Err()
 				if err2 != nil {
 					global.Logger.Error("消息放入队列出错，err:" + err2.Error())
 					return err2
 				}
 
-				_, err = global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserOfflineMessNum(i), strconv.Itoa(int(message.Sender)), 1).Result()
+				_, err = global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserSessionNum(i), strconv.Itoa(int(message.Sender)), 1).Result()
 				if err != nil {
 					global.Logger.Error("redis自增，err:" + err.Error())
 					return err

@@ -4,6 +4,7 @@ import (
 	"IM-Server/global"
 	"IM-Server/im"
 	_json "IM-Server/im/message/json"
+	"IM-Server/model/system"
 	"context"
 	"fmt"
 	"strconv"
@@ -11,22 +12,23 @@ import (
 
 func InitWebSocket(id int64) {
 
+	//用户存放redis,查询数据库 将数据放入redis
+	s := &system.User{}
+	global.DB.Where("id = ?", id).Find(s)
+	global.Redis.Set(context.Background(), im.GetRedisKeyMain(id), s, 0)
+
 	//上线人数++
 	err := global.Redis.IncrBy(context.Background(), im.GetRedisKeyOnlineNum(), 1).Err()
 	if err != nil {
 		global.Logger.Error(fmt.Sprintf("在线人数添加出错，err:%s", err.Error()))
 	}
+
 	//订阅用户的群，并将用户放入在线集合，
-	fmt.Println("1111111")
 	groups, err := global.Redis.SMembers(context.Background(), im.GetRedisKeyGroup(id)).Result()
 	if err != nil {
 		global.Logger.Error(fmt.Sprintf("获取%d用户的所有群id错误，err:%d", id, err))
 	}
-	fmt.Println(groups)
-	fmt.Println("1111111")
-
 	for _, group := range groups {
-		fmt.Println(group)
 
 		groupId, _ := strconv.ParseInt(group, 10, 64)
 		channel := global.Redis.Subscribe(context.Background(), im.GetRedisKeyGroupChannel(groupId))

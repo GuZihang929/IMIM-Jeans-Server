@@ -17,8 +17,8 @@ type ListResponse struct {
 }
 
 const (
-	Success = 0
-	Error   = 7
+	Success = http.StatusOK
+	Error   = http.StatusOK
 )
 
 func Result(code int, data any, msg string, c *gin.Context) {

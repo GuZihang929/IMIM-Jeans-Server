@@ -31,7 +31,6 @@ func main() {
 	initialize.InitEmail()
 	//初始化路由
 	Host := fmt.Sprintf(":%s", global.Config.Web.Host)
-	fmt.Println(Host)
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
