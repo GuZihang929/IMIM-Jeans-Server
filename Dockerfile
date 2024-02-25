@@ -41,7 +41,7 @@ COPY --from=builder /build/app /
 #        chmod 755 wait-for.sh
 
 # 声明服务端口
-EXPOSE 9001
+EXPOSE 9009
 EXPOSE 9002
 
 # 需要运行的命令
