@@ -12,6 +12,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	jsoniter "github.com/json-iterator/go"
+	"sort"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -131,9 +133,6 @@ func (c *Browser) readMessage() {
 			//心跳检测返回消息
 
 		case msg := <-readChan:
-			fmt.Println("--------------")
-			fmt.Println(*msg.m)
-			fmt.Println(&msg.m)
 
 			if msg.err != nil {
 				if !c.IsRunning() || msg.err.Error() == "closed" {
@@ -147,9 +146,9 @@ func (c *Browser) readMessage() {
 			c.hbLost = 0
 			c.hbR.Reset(HeartbeatDuration)
 
-			id := c.id
+			//id := c.id
 			// 统一处理消息函数
-			fmt.Println("处理消息：", id)
+
 			messageHandleFunc(msg.m)
 			msg.Recycle()
 		}
@@ -184,6 +183,7 @@ func (c *Browser) writeMessage() {
 			c.hbW.Reset(HeartbeatDuration)
 
 		case m := <-c.messages:
+
 			b, err := json.Marshal(*m)
 			if err != nil {
 				fmt.Println(err)
@@ -192,7 +192,8 @@ func (c *Browser) writeMessage() {
 
 			c.hbLost = 0
 			c.hbW.Reset(HeartbeatDuration)
-
+			fmt.Println("消息写入")
+			fmt.Println(b)
 			err = c.conn.Write(b)
 		}
 	}
@@ -205,7 +206,7 @@ STOP:
 
 // OfflineHandel 处理离线消息
 func (c *Browser) OfflineHandel(key int64) {
-	fmt.Println("处理离线消息")
+	// 获取redis中用户的会话哈希
 	result, err := global.Redis.HGetAll(context.Background(), im.GetRedisKeyUserSessionMess(key)).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -214,14 +215,11 @@ func (c *Browser) OfflineHandel(key int64) {
 		global.Logger.Error("获取离线消息出错，err" + err.Error())
 	}
 
-	//_, err = global.Redis.Del(context.Background(), im.GetRedisKeyUserSessionMess(key)).Result()
-	//if err != nil {
-	//	if err == redis.Nil {
-	//		return
-	//	}
-	//	global.Logger.Error("删除离线消息出错，err" + err.Error())
-	//}
+	// 创建会话列表
 
+	sessions := model.Sessions{}
+
+	// 解析并将此结构按照时间戳降序排列。
 	for _, value := range result {
 		message := &_json.ComMessage{}
 		err = json.Unmarshal([]byte(value), message)
@@ -253,21 +251,29 @@ func (c *Browser) OfflineHandel(key int64) {
 
 		i, err := strconv.ParseInt(num, 10, 64)
 
-		mess := &model.Session{
+		session := &model.Session{
 			Id:      user.UserID,
 			Name:    user.Nickname,
 			Avatar:  user.Avatar,
-			Message: message.Data.Data().(string),
+			Message: message.Message,
 			Num:     i,
-			Time:    123,
+			Time:    message.Time,
 		}
-		fmt.Println(mess)
-		if err != nil {
-			if err == redis.Nil {
-				return
-			}
-			global.Logger.Error("获取用户信息，err" + err.Error())
-		}
-		c.messages <- message
+		sessions = append(sessions, *session)
+
 	}
+
+	// 将消息按时间戳排序
+	sort.Sort(sessions)
+	marshal, err := jsoniter.Marshal(sessions)
+	if err != nil {
+		global.Logger.Error("离线信息解析错误：" + err.Error())
+	}
+	fmt.Println("会话列表")
+	fmt.Println(string(marshal))
+	mess := &_json.ComMessage{
+		Message: "",
+	}
+
+	c.messages <- mess
 }

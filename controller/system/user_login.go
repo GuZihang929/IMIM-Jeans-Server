@@ -56,5 +56,10 @@ func (SysPublicController) Login(c *gin.Context) {
 	if err != nil {
 		global.Logger.Error(err.Error())
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "用户登录成功", "token": token, "user": userInfo})
+	// 登录成功，返回用户信息及生成的token
+	res.OkWithData(map[string]interface{}{
+		"message": "用户登录成功",
+		"token":   token,
+		"user":    userInfo,
+	}, c)
 }

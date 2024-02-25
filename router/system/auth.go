@@ -14,7 +14,6 @@ func (s *AuthRouter) InitAuthRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 	var authController = controller.ApiGroupApp.SystemApiGroup
 	{
 		Router.POST("/info", authController.Info)
-		Router.GET("/world", authController.World)
 
 	}
 	return Router

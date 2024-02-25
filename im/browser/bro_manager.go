@@ -111,14 +111,14 @@ func (c *DefaultBrowserManager) GetBrowser(count int64) *Browser {
 }
 
 func Handel(message *_json.ComMessage) error {
-	fmt.Println(message)
 
 	if message.Action == "1" {
 		getBrowser := DefaultManager.GetBrowser(message.Sender)
 		fmt.Println("发送消息")
-		mess := &_json.ComMessage{Action: "1"}
+		mess := &_json.ComMessage{Action: "1", Ver: 1, Message: ""}
 		getBrowser.messages <- mess
 		fmt.Println("发送成功")
+		return nil
 	}
 
 	switch message.Ver {
@@ -146,38 +146,27 @@ func Handel(message *_json.ComMessage) error {
 			//不在线
 
 			//消息放入队列中
-			jsonBytes, err := json.Marshal(*message)
-			if err != nil {
-				global.Logger.Error("JSON 序列化错误:" + err.Error())
-				return err
-			}
 
-			err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(message.Receiver), message.Sender, string(jsonBytes)).Err()
+			//需要创建session结构体，放入redis
+			err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(message.Receiver), message.Sender, message.Message).Err()
 			if err2 != nil {
 				global.Logger.Error("消息放入队列出错，err:" + err2.Error())
 				return err2
 			}
 
-			result, err := global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver), strconv.Itoa(int(message.Sender)), 1).Result()
+			_, err := global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver), strconv.Itoa(int(message.Sender)), 1).Result()
 			if err != nil {
 				global.Logger.Error("redis自增，err:" + err.Error())
 				return err
 			}
-			fmt.Println(result)
 
-		}
-
-		jsonBytes, err := json.Marshal(message.Data)
-		if err != nil {
-			global.Logger.Error("JSON 序列化错误:" + err.Error())
-			return err
 		}
 
 		comm := &system.Communication{
 			FromID:  message.Sender,
 			ToID:    message.Receiver,
-			Content: string(jsonBytes),
-			Time:    time.Now(),
+			Content: message.Message,
+			Time:    time.Now().Unix(),
 			Seq:     message.Seq,
 			Type:    message.Type,
 			Class:   "0",
@@ -234,7 +223,7 @@ func Handel(message *_json.ComMessage) error {
 			FromID:  message.Sender,
 			GroupID: message.Receiver,
 			Content: string(jsonBytes),
-			Time:    time.Now(),
+			Time:    time.Now().Unix(),
 			Seq:     message.Seq,
 			Type:    message.Type,
 			Class:   "0",

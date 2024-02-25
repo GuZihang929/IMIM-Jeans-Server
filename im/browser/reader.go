@@ -1,6 +1,7 @@
 package browser
 
 import (
+	"IM-Server/global"
 	"IM-Server/im/conn"
 	_json "IM-Server/im/message/json"
 	"encoding/json"
@@ -77,5 +78,9 @@ func (d *defaultReader) Read(conn conn.Connection) (*_json.ComMessage, error) {
 
 	m := _json.NewEmptyMessage()
 	err = json.Unmarshal(bytes, &m)
+	if err != nil {
+		global.Logger.Error("连接数据解析出错：" + err.Error())
+		return nil, err
+	}
 	return m, err
 }
