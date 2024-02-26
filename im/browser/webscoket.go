@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 )
 
 func InitWebSocket(id int64) {
@@ -63,6 +64,7 @@ func InitWebSocket(id int64) {
 						Ver:      1,
 						Seq:      0,
 						Action:   "",
+						Time:     time.Now().Unix(),
 						Message:  msg.String(),
 						Extra:    nil,
 					}

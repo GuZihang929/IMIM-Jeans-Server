@@ -1,6 +1,7 @@
 package json
 
 import (
+	"IM-Server/im/message/model"
 	"encoding/json"
 	"fmt"
 )
@@ -59,10 +60,11 @@ type ComMessage struct {
 	Ver      int64             `json:"Ver"`      //单发/群发，0/1
 	Seq      int64             `json:"Seq"`      //序列号
 	Type     int64             `json:"Type"`     //消息类型，1为普通文本，2为图像，3为语音。
-	Action   string            `json:"Action"`   //信号类型, 0为消息，1为心跳检测
+	Action   string            `json:"Action"`   //信号类型, 0为消息，1为心跳检测，2为通知
 	Message  string            `json:"Message"`  //消息
 	Time     int64             `json:"Time"`     //消息时间
 	Extra    map[string]string `json:"Extra"`    //额外信息
+	Session  model.Sessions    `json:"Sessions"`
 }
 
 func NewEmptyMessage() *ComMessage {
@@ -80,7 +82,7 @@ func NewEmptyMessage() *ComMessage {
 }
 
 func (d *ComMessage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d)
+	return json.Marshal(*d)
 }
 
 //func (d *ComMessage) DataToString() string {

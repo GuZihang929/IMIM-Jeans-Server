@@ -1,9 +1,6 @@
 package model
 
-import "IM-Server/im/message/json"
-
 type Session struct {
-	json.Data
 	Id      int64       `json:"id,omitempty"` //会话对象id
 	Name    string      `json:"name,omitempty"`
 	Avatar  string      `json:"avatar,omitempty"`

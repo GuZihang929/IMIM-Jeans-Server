@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	jsoniter "github.com/json-iterator/go"
 	"sort"
 	"strconv"
 	"sync/atomic"
@@ -214,6 +213,7 @@ func (c *Browser) OfflineHandel(key int64) {
 		}
 		global.Logger.Error("获取离线消息出错，err" + err.Error())
 	}
+	fmt.Println("redis中的会话哈希，", result)
 
 	// 创建会话列表
 
@@ -251,7 +251,7 @@ func (c *Browser) OfflineHandel(key int64) {
 
 		i, err := strconv.ParseInt(num, 10, 64)
 
-		session := &model.Session{
+		session := model.Session{
 			Id:      user.UserID,
 			Name:    user.Nickname,
 			Avatar:  user.Avatar,
@@ -259,20 +259,15 @@ func (c *Browser) OfflineHandel(key int64) {
 			Num:     i,
 			Time:    message.Time,
 		}
-		sessions = append(sessions, *session)
+		sessions = append(sessions, session)
 
 	}
 
 	// 将消息按时间戳排序
 	sort.Sort(sessions)
-	marshal, err := jsoniter.Marshal(sessions)
-	if err != nil {
-		global.Logger.Error("离线信息解析错误：" + err.Error())
-	}
-	fmt.Println("会话列表")
-	fmt.Println(string(marshal))
+
 	mess := &_json.ComMessage{
-		Message: "",
+		Session: sessions,
 	}
 
 	c.messages <- mess

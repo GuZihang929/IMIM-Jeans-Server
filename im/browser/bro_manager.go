@@ -148,7 +148,8 @@ func Handel(message *_json.ComMessage) error {
 			//消息放入队列中
 
 			//需要创建session结构体，放入redis
-			err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(message.Receiver), message.Sender, message.Message).Err()
+			marshalJSON, _ := message.MarshalJSON()
+			err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(message.Receiver), message.Sender, string(marshalJSON)).Err()
 			if err2 != nil {
 				global.Logger.Error("消息放入队列出错，err:" + err2.Error())
 				return err2
@@ -218,6 +219,54 @@ func Handel(message *_json.ComMessage) error {
 
 		case "2":
 
+			allAdmin, err := global.Redis.SMembers(context.Background(), im.GetRedisKeyGroupAdmin(message.Receiver)).Result()
+			if err != nil {
+				global.Logger.Error("获取群All管理员：" + err.Error())
+				return err
+			}
+
+			//获取群管理员id，发送消息
+			admin, err := global.Redis.SInter(context.Background(), im.GetRedisKeyGroupOnlineUser(message.Receiver), im.GetRedisKeyGroupAdmin(message.Receiver)).Result()
+			if err != nil {
+				global.Logger.Error("获取群在线管理员：" + err.Error())
+				return err
+			}
+			temp := make(map[string]struct{})
+
+			for _, s := range admin {
+				temp[s] = struct{}{}
+			}
+
+			for _, s := range allAdmin {
+				i, err := strconv.ParseInt(s, 10, 64)
+
+				if _, ok := temp[s]; ok {
+					if err != nil {
+						global.Logger.Error("数据转换出错，err:" + err.Error())
+						return err
+					}
+
+					//将消息发送到接收者通道中
+					getBrowser := DefaultManager.GetBrowser(i)
+					fmt.Println("发送消息")
+					getBrowser.messages <- message
+				} else {
+					//不在线管理员
+
+					err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(i), message.Sender, string(jsonBytes)).Err()
+					if err2 != nil {
+						global.Logger.Error("消息放入队列出错，err:" + err2.Error())
+						return err2
+					}
+
+					_, err = global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserSessionNum(i), strconv.Itoa(int(message.Sender)), 1).Result()
+					if err != nil {
+						global.Logger.Error("redis自增，err:" + err.Error())
+						return err
+					}
+				}
+
+			}
 		}
 		comm := &system.Communication{
 			FromID:  message.Sender,
