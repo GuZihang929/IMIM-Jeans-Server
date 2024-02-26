@@ -227,6 +227,7 @@ func (c *Browser) OfflineHandel(key int64) {
 			global.Logger.Error("消息反序列化失败，err:" + err.Error())
 			break
 		}
+		fmt.Println(message.Receiver)
 		s, err := global.Redis.Get(context.Background(), im.GetRedisKeyMain(message.Receiver)).Result()
 		if err != nil {
 			if err == redis.Nil {
@@ -262,13 +263,11 @@ func (c *Browser) OfflineHandel(key int64) {
 		sessions = append(sessions, session)
 
 	}
-
 	// 将消息按时间戳排序
 	sort.Sort(sessions)
 
 	mess := &_json.ComMessage{
 		Session: sessions,
 	}
-
 	c.messages <- mess
 }

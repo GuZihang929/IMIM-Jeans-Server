@@ -78,7 +78,7 @@ func (c *DefaultBrowserManager) BrowserConnected(ctx context.Context, conn conn.
 	c.browsers.bros[connUid] = ret
 
 	//建立长连接的信息初始化
-	go InitWebSocket(connUid)
+	InitWebSocket(connUid)
 
 	//处理离线消息,创建会话列表
 	go ret.OfflineHandel(connUid)
