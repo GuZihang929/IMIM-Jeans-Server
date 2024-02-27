@@ -224,19 +224,8 @@ func (c *Browser) OfflineHandel(key int64) {
 			global.Logger.Error("消息反序列化失败，err:" + err.Error())
 			break
 		}
-		s, err := global.Redis.Get(context.Background(), im.GetRedisKeyMain(message.Sender)).Result()
-		if err != nil {
-			if err == redis.Nil {
-				return
-			}
-			global.Logger.Error("获取用户信息出错，err" + err.Error())
-		}
 		user := system.User{}
-		err = json.Unmarshal([]byte(s), &user)
-		if err != nil {
-			global.Logger.Error("消息反序列化失败，err:" + err.Error())
-			break
-		}
+		global.DB.Where("id= ?", message.Sender).First(&user)
 
 		num, err := global.Redis.HGet(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver), strconv.Itoa(int(message.Sender))).Result()
 		if err != nil {
