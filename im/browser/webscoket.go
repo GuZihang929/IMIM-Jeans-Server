@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"log"
 	"strconv"
 	"time"
@@ -22,8 +23,6 @@ func InitWebSocket(id int64) {
 	if err != nil {
 		log.Fatal("JSON 转换失败:", err)
 	}
-
-	fmt.Println("获取用户信息：", s)
 	_, err2 := global.Redis.Set(context.Background(), im.GetRedisKeyMain(id), jsonData, 0).Result()
 	if err2 != nil {
 		global.Logger.Error("用户信息保存到redis，" + err2.Error())

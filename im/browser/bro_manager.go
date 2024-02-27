@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"strconv"
 	"sync"
 	"time"
@@ -69,7 +70,6 @@ func (c *DefaultBrowserManager) BrowserConnected(ctx context.Context, conn conn.
 	if err != nil {
 		global.Logger.Error("长连接，请求头数据格式有问题")
 	}
-	fmt.Println("此用户的通道uid：", connUid)
 
 	//将userId保存到redis，value为 connUid
 
@@ -81,7 +81,7 @@ func (c *DefaultBrowserManager) BrowserConnected(ctx context.Context, conn conn.
 	InitWebSocket(connUid)
 
 	//处理离线消息,创建会话列表
-	go ret.OfflineHandel(connUid)
+	ret.OfflineHandel(connUid)
 	// 开始处理连接的消息
 	ret.Run()
 	return connUid
@@ -114,10 +114,10 @@ func Handel(message *_json.ComMessage) error {
 
 	if message.Action == "1" {
 		getBrowser := DefaultManager.GetBrowser(message.Sender)
-		fmt.Println("发送消息")
+
 		mess := &_json.ComMessage{Action: "1", Ver: 1, Message: ""}
 		getBrowser.messages <- mess
-		fmt.Println("发送成功")
+
 		return nil
 	}
 
@@ -138,9 +138,7 @@ func Handel(message *_json.ComMessage) error {
 
 			//将消息发送到接收者通道中
 			getBrowser := DefaultManager.GetBrowser(message.Receiver)
-			fmt.Println("发送消息")
 			getBrowser.messages <- message
-			fmt.Println("发送成功")
 
 		} else {
 			//不在线
@@ -172,7 +170,7 @@ func Handel(message *_json.ComMessage) error {
 			Type:    message.Type,
 			Class:   "0",
 		}
-		fmt.Println(comm)
+
 		//处理数据
 		global.DB.Create(&comm)
 
@@ -215,7 +213,6 @@ func Handel(message *_json.ComMessage) error {
 
 			//获取群号：message.Receiver,获取此群的频道，发布消息。
 			global.Redis.Publish(context.Background(), im.GetRedisKeyGroupChannel(message.Receiver), jsonBytes)
-			fmt.Println("消息发布了")
 
 		case "2":
 
@@ -248,7 +245,6 @@ func Handel(message *_json.ComMessage) error {
 
 					//将消息发送到接收者通道中
 					getBrowser := DefaultManager.GetBrowser(i)
-					fmt.Println("发送消息")
 					getBrowser.messages <- message
 				} else {
 					//不在线管理员

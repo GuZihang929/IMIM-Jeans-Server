@@ -191,8 +191,6 @@ func (c *Browser) writeMessage() {
 
 			c.hbLost = 0
 			c.hbW.Reset(HeartbeatDuration)
-			fmt.Println("消息写入")
-			fmt.Println(b)
 			err = c.conn.Write(b)
 		}
 	}
@@ -213,7 +211,6 @@ func (c *Browser) OfflineHandel(key int64) {
 		}
 		global.Logger.Error("获取离线消息出错，err" + err.Error())
 	}
-	fmt.Println("redis中的会话哈希，", result)
 
 	// 创建会话列表
 
@@ -227,22 +224,21 @@ func (c *Browser) OfflineHandel(key int64) {
 			global.Logger.Error("消息反序列化失败，err:" + err.Error())
 			break
 		}
-		fmt.Println(message.Receiver)
-		s, err := global.Redis.Get(context.Background(), im.GetRedisKeyMain(message.Receiver)).Result()
+		s, err := global.Redis.Get(context.Background(), im.GetRedisKeyMain(message.Sender)).Result()
 		if err != nil {
 			if err == redis.Nil {
 				return
 			}
 			global.Logger.Error("获取用户信息出错，err" + err.Error())
 		}
-		user := &system.User{}
-		err = json.Unmarshal([]byte(s), user)
+		user := system.User{}
+		err = json.Unmarshal([]byte(s), &user)
 		if err != nil {
 			global.Logger.Error("消息反序列化失败，err:" + err.Error())
 			break
 		}
 
-		num, err := global.Redis.Get(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver)).Result()
+		num, err := global.Redis.HGet(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver), strconv.Itoa(int(message.Sender))).Result()
 		if err != nil {
 			if err == redis.Nil {
 				return

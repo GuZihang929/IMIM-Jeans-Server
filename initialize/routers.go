@@ -22,7 +22,7 @@ func Routers() *gin.Engine {
 	}
 	//    私有路有组有拦截
 	PrivateGroup := Router.Group("auth")
-	PrivateGroup.Use()
+	PrivateGroup.Use(middleware.JwtAuth())
 	{
 		systemRouter.InitAuthRouter(PublicGroup)
 	}
