@@ -95,11 +95,11 @@ func (c AuthController) GetHistoricalNew(ctx *gin.Context) {
 	}
 
 	message := struct {
-		Id   int64 `json:"id"`
-		Ver  int64 `json:"ver"`
-		Seq  int64 `json:"seq"`
-		Time int64 `json:"time"`
-		Num  int   `json:"num"`
+		Id    int64 `json:"id"`
+		Ver   int64 `json:"ver"`
+		Seq   int64 `json:"seq"`
+		Time  int64 `json:"time"`
+		Total int   `json:"total"`
 	}{}
 	// 获取id
 	err = ctx.ShouldBindJSON(&message)
@@ -113,7 +113,7 @@ func (c AuthController) GetHistoricalNew(ctx *gin.Context) {
 		SRId := utils.MergeId(claims.UserID, message.Id)
 
 		cp := []system.ChatPrivate{}
-		global.DB.Where("sr_id = ? and time <= ?", SRId, message.Time).Limit(message.Num).Find(&cp)
+		global.DB.Where("sr_id = ? and time <= ?", SRId, message.Time).Limit(message.Total).Find(&cp)
 
 		ctx.JSON(200, gin.H{
 			"code": 200,
