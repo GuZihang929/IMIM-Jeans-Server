@@ -48,7 +48,7 @@ func GetUserByAccount(account string) (*system.User, error) {
 // GetUserByUserID  根据用户ID获取用户信息
 func GetUserByUserID(userID int64) (*system.User, error) {
 	var user system.User
-	result := global.DB.Where("uid = ?", userID).Limit(1).Find(&user)
+	result := global.DB.Where("	id = ?", userID).Limit(1).Find(&user)
 	if result.Error != nil {
 		// 处理数据库查询错误
 		return nil, result.Error

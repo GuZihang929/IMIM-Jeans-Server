@@ -7,7 +7,8 @@ type Session struct {
 	Message interface{} `json:"message,omitempty"`
 	Num     int64       `json:"num,omitempty"`
 	Time    int64       `json:"time,omitempty"`
-	Ver     int64       `json:"ver"`
+	Seq     int64       `json:"seq"` // 消息序列号
+	Ver     int64       `json:"ver"` // 0为单聊，1为群聊
 }
 
 type Sessions []Session

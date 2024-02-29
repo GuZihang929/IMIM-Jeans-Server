@@ -20,7 +20,7 @@ func (GroupController) JoinGroup(c *gin.Context) {
 		return
 	}
 	groupID := c.Query("group_id")
-	var info system.Group
+	var info system.GroupUser
 	info.UserId = claims.UserID
 	info.JoinInTime = time.Now()
 	info.GroupId, _ = strconv.ParseInt(groupID, 10, 64)

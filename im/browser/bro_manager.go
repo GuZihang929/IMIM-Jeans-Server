@@ -6,6 +6,7 @@ import (
 	"IM-Server/im/conn"
 	_json "IM-Server/im/message/json"
 	"IM-Server/model/system"
+	"IM-Server/utils"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -133,6 +134,21 @@ func Handel(message *_json.ComMessage) error {
 			global.Logger.Error("用户在线检测出错，err:" + err.Error())
 			return err
 		}
+
+		//需要创建session结构体，放入redis
+		marshalJSON, _ := message.MarshalJSON()
+		err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(message.Receiver), message.Sender, string(marshalJSON)).Err()
+		if err2 != nil {
+			global.Logger.Error("消息放入队列出错，err:" + err2.Error())
+			return err2
+		}
+
+		_, err = global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver), strconv.Itoa(int(message.Sender)), 1).Result()
+		if err != nil {
+			global.Logger.Error("redis自增，err:" + err.Error())
+			return err
+		}
+
 		if exists == 1 {
 			//在线
 
@@ -140,35 +156,15 @@ func Handel(message *_json.ComMessage) error {
 			getBrowser := DefaultManager.GetBrowser(message.Receiver)
 			getBrowser.messages <- message
 
-		} else {
-			//不在线
-
-			//消息放入队列中
-
-			//需要创建session结构体，放入redis
-			marshalJSON, _ := message.MarshalJSON()
-			err2 := global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(message.Receiver), message.Sender, string(marshalJSON)).Err()
-			if err2 != nil {
-				global.Logger.Error("消息放入队列出错，err:" + err2.Error())
-				return err2
-			}
-
-			_, err := global.Redis.HIncrBy(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver), strconv.Itoa(int(message.Sender)), 1).Result()
-			if err != nil {
-				global.Logger.Error("redis自增，err:" + err.Error())
-				return err
-			}
-
 		}
-
-		comm := &system.Communication{
-			FromID:  message.Sender,
-			ToID:    message.Receiver,
-			Content: message.Message,
+		comm := &system.ChatPrivate{
+			SRId:    utils.MergeId(message.Sender, message.Receiver),
+			SId:     message.Sender,
+			RId:     message.Receiver,
+			Context: message.Message,
 			Time:    time.Now().Unix(),
 			Seq:     message.Seq,
 			Type:    message.Type,
-			Class:   "0",
 		}
 
 		//处理数据

@@ -22,7 +22,7 @@ func (GroupController) CreateGroup(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	var info system.Group
+	var info system.GroupUser
 	info.UserId = claims.UserID
 	info.JoinInTime = time.Now()
 	info.GroupId = GenerateRandomGroupID()
