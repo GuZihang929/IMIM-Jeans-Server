@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"IM-Server/global"
+	"IM-Server/model/system"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -28,6 +29,8 @@ func InitMysql() {
 	sqlDB, _ := db.DB()
 	sqlDB.SetMaxIdleConns(10)  //最大连接数
 	sqlDB.SetMaxOpenConns(100) //
+	// 自动创建gpt聊天会话表
+	db.AutoMigrate(&system.SessionLog{})
 	global.DB = db
 	fmt.Println("MySQL连接成功")
 }
