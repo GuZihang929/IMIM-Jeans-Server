@@ -60,7 +60,7 @@ type ComMessage struct {
 	Ver      int64             `json:"Ver"`      //单发/群发，0/1
 	Seq      int64             `json:"Seq"`      //序列号
 	Type     int64             `json:"Type"`     //消息类型，1为普通文本，2为图像，3为语音。
-	Action   string            `json:"Action"`   //信号类型, 0为消息，1为心跳检测，2为通知
+	Action   string            `json:"Action"`   //信号类型, 0为消息，1为心跳检测，2为通知，3为初始化会话列表
 	Message  string            `json:"Message"`  //消息
 	Time     int64             `json:"Time"`     //消息时间
 	Extra    map[string]string `json:"Extra"`    //额外信息

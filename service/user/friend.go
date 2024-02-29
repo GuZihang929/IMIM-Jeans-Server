@@ -50,3 +50,17 @@ func GetFriendList(userId int64) ([]system.Friend, error) {
 	}
 	return friendInfos, nil
 }
+
+// GetFriendIDs 根据用户ID获取其好友列表中的friend_id
+func GetFriendIDs(userId int64) ([]int64, error) {
+	var friendIDs []int64
+	result := global.DB.Table("im_user_friend").
+		Select("friend_id"). // 只查询friend_id列
+		Where("user_id = ? AND status = ?", userId, 1).
+		Pluck("friend_id", &friendIDs) // 使用Pluck方法直接将查询结果填充到int64切片中
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return friendIDs, nil
+}

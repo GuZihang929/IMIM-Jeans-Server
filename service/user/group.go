@@ -9,7 +9,7 @@ import (
 )
 
 // InsertGroup  将新的群数据插入数据库
-func InsertGroup(info system.Group) error {
+func InsertGroup(info system.GroupUser) error {
 	result := global.DB.Create(&info)
 	if result.Error != nil {
 		return result.Error
@@ -19,14 +19,14 @@ func InsertGroup(info system.Group) error {
 
 // IsUserInGroup 检查用户是否已经在群中
 func IsUserInGroup(userID int64, groupID int64) bool {
-	var existingUser system.Group
+	var existingUser system.GroupUser
 	result := global.DB.Where("user_id = ? AND group_id = ?", userID, groupID).First(&existingUser)
 	return result.Error == nil
 }
 
 // IsGroupOwner 检查用户是否是群主
 func IsGroupOwner(userID int64, groupID int64) (bool, error) {
-	var groupMember system.Group
+	var groupMember system.GroupUser
 	result := global.DB.Where("user_id = ? AND group_id = ? AND identity = ?", userID, groupID, 1).First(&groupMember)
 
 	if result.Error != nil {
@@ -40,7 +40,7 @@ func IsGroupOwner(userID int64, groupID int64) (bool, error) {
 }
 
 func UpdateGroup(groupId int64, userId int64) error {
-	var group system.Group
+	var group system.GroupUser
 	// 根据群号和用户ID查询群组信息
 	result := global.DB.Where("group_id = ? AND user_id = ?", groupId, userId).First(&group)
 
@@ -62,7 +62,7 @@ func UpdateGroup(groupId int64, userId int64) error {
 
 // DeleteGroup 解散群组
 func DeleteGroup(groupId int64) error {
-	result := global.DB.Where(" group_id = ?", groupId).Delete(&system.Group{})
+	result := global.DB.Where(" group_id = ?", groupId).Delete(&system.GroupUser{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -71,7 +71,7 @@ func DeleteGroup(groupId int64) error {
 
 // DeleteGroupUser  群主或者管理删除群员
 func DeleteGroupUser(groupId int64, userId int64) error {
-	result := global.DB.Where(" group_id = ? and user_id = ?", groupId, userId).Delete(&system.Group{})
+	result := global.DB.Where(" group_id = ? and user_id = ?", groupId, userId).Delete(&system.GroupUser{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -79,7 +79,7 @@ func DeleteGroupUser(groupId int64, userId int64) error {
 }
 
 func IsGroupGM(userID int64, groupID int64) (bool, error) {
-	var groupMember system.Group
+	var groupMember system.GroupUser
 
 	// 查询群组成员信息
 	result := global.DB.Where("user_id = ? AND group_id = ? AND identity > 0", userID, groupID).First(&groupMember)

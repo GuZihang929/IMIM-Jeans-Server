@@ -49,7 +49,7 @@ func InitWebSocket(id int64) {
 			global.Logger.Error("将用户添加到群在线集合中出错，err:" + err.Error())
 		}
 		ch := channel.Channel()
-		//go messageHandel.ListeningGroupHandel(&messages, b.User, b.Group)
+		//go messageHandel.ListeningGroupHandel(&messages, b.User, b.GroupUser)
 		go func() {
 			bro := DefaultManager.GetBrowser(id)
 			for {

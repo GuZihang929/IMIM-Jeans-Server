@@ -252,6 +252,7 @@ func (c *Browser) OfflineHandel(key int64) {
 	sort.Sort(sessions)
 
 	mess := &_json.ComMessage{
+		Action:  "3",
 		Session: sessions,
 	}
 	c.messages <- mess

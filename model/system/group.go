@@ -3,12 +3,10 @@ package system
 import "time"
 
 type Group struct {
-	UserId     int64     `json:"user_id"`
-	GroupId    int64     `json:"group_id"`
-	JoinInTime time.Time `json:"join_in_time"`
-	Identity   int64     `json:"identity"` // 0:普通群员 1:群主 2:管理员
-}
-
-func (Group) TableName() string {
-	return "group_user"
+	Id        int64     `gorm:"id" json:"id"`
+	GId       int64     `gorm:"g_id" json:"g_id,omitempty"`
+	GName     string    `gorm:"g_name" json:"g_name,omitempty"`
+	GUrl      string    `gorm:"g_url" json:"g_url,omitempty"`
+	GCreatId  int64     `gorm:"g_creat_id" json:"g_creat_id,omitempty"`
+	CreatTime time.Time `gorm:"creat_time" json:"creat_time"`
 }
