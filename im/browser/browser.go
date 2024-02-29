@@ -243,7 +243,9 @@ func (c *Browser) OfflineHandel(key int64) {
 			Avatar:  user.Avatar,
 			Message: message.Message,
 			Num:     i,
+			Seq:     message.Seq,
 			Time:    message.Time,
+			Ver:     message.Ver,
 		}
 		sessions = append(sessions, session)
 
