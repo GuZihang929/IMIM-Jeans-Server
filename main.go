@@ -22,13 +22,13 @@ func main() {
 	//初始化连接mysql
 	initialize.InitMysql()
 	//初始化连接redis
-	initialize.InitRedis()
+	//initialize.InitRedis()
 	//连接mongo
 	//initialize.Global_Mongo = initialize.InitMongo()
 	//加载配置文件中的jwt信息
-	initialize.InitJWT()
+	//initialize.InitJWT()
 	//加载配置文件中的邮箱信息
-	initialize.InitEmail()
+	//initialize.InitEmail()
 	//初始化路由
 	Host := fmt.Sprintf(":%s", global.Config.Web.Host)
 

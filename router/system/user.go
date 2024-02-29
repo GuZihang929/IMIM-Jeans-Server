@@ -19,7 +19,8 @@ func (s *PublicRouter) InitPublicRouter(Router *gin.RouterGroup) (R gin.IRoutes)
 		sysRouter.POST("/sendEmail", publicController.SendEmail)
 		sysRouter.POST("/visitorLogin", publicController.VisitorLogin)
 		sysRouter.GET("/visitorLogout", publicController.VisitorLogout)
-
+		sysRouter.POST("/gpt", publicController.GptController) //gpt接口
+		//sysRouter.GET("/gptdemo", publicController.GptDemoController)
 	}
 	return sysRouter
 }

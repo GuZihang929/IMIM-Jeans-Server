@@ -1,5 +1,9 @@
 package system
 
+import (
+	"gorm.io/gorm"
+)
+
 type Communication struct {
 	ID        uint   `gorm:"primarykey"`
 	FromID    int64  `gorm:"from_id;not null;comment:'发送人id'"`
@@ -17,5 +21,18 @@ type Communication struct {
 }
 
 func (Communication) TableName() string {
+	return "chat_communication"
+}
+
+// gpt会话消息
+type SessionLog struct {
+	gorm.Model
+	SessionID string `gorm:"type:varchar(36);primary_key" json:"session_id"`
+	Request   string `gorm:"type:text;not null" json:"request"`
+	Response  string `gorm:"type:text;not null" json:"response"`
+	UserID    int    `json:"user_id"`
+}
+
+func (SessionLog) TableName() string {
 	return "chat_communication"
 }
