@@ -226,7 +226,7 @@ func (c *Browser) OfflineHandel(key int64) {
 		}
 		user := system.User{}
 		global.DB.Where("id= ?", message.Sender).First(&user)
-
+		fmt.Println(user)
 		num, err := global.Redis.HGet(context.Background(), im.GetRedisKeyUserSessionNum(message.Receiver), strconv.Itoa(int(message.Sender))).Result()
 		if err != nil {
 			if err == redis.Nil {
