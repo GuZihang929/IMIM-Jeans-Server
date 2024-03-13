@@ -149,6 +149,22 @@ func Handel(message *_json.ComMessage) error {
 			return err
 		}
 
+		result, err := global.Redis.HGet(context.Background(), im.GetRedisKeyUserSessionMess(message.Sender), strconv.Itoa(int(message.Receiver))).Result()
+		var mess _json.ComMessage
+		err = json.Unmarshal([]byte(result), &mess)
+		mess.Message = message.Message
+		mess.Time = message.Time
+
+		bytes, err := mess.MarshalJSON()
+		if err != nil {
+			panic(err)
+		}
+		err2 = global.Redis.HSet(context.Background(), im.GetRedisKeyUserSessionMess(message.Sender), message.Receiver, string(bytes)).Err()
+		if err2 != nil {
+			global.Logger.Error("消息放入队列出错，err:" + err2.Error())
+			return err2
+		}
+
 		if exists == 1 {
 			//在线
 
@@ -157,12 +173,13 @@ func Handel(message *_json.ComMessage) error {
 			getBrowser.messages <- message
 
 		}
+
 		comm := &system.ChatPrivate{
 			SRId:    utils.MergeId(message.Sender, message.Receiver),
 			SId:     message.Sender,
 			RId:     message.Receiver,
 			Context: message.Message,
-			Time:    time.Now().Unix(),
+			Time:    message.Time,
 			Seq:     message.Seq,
 			Type:    message.Type,
 		}

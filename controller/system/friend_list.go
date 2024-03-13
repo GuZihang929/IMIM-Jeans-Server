@@ -63,7 +63,7 @@ func (FriendController) GetFriendList(c *gin.Context) {
 		friendDetails = append(friendDetails, FriendWithUserInfo{UserInfo: *friendInfo})
 	}
 
-	// 登录成功，返回用户信息及生成的token
+	//登录成功，返回用户信息及生成的token
 	res.OkWithData(map[string]interface{}{
 		"user": friendDetails,
 	}, c)

@@ -114,8 +114,11 @@ func (c AuthController) GetHistoricalNew(ctx *gin.Context) {
 		SRId := utils.MergeId(claims.UserID, message.Id)
 
 		cp := []system.ChatPrivate{}
-		global.DB.Where("sr_id = ? and time <= ?", SRId, message.Time).Limit(message.Total).Find(&cp)
+		global.DB.Where("sr_id = ? and time <= ?", SRId, message.Time).Order("time DESC").Limit(message.Total).Find(&cp)
 
+		for i := 0; i < len(cp)/2; i++ {
+			cp[i], cp[len(cp)-1-i] = cp[len(cp)-1-i], cp[i]
+		}
 		ctx.JSON(200, gin.H{
 			"code": 200,
 			"data": cp,
