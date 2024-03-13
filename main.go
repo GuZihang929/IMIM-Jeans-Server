@@ -38,6 +38,7 @@ func main() {
 		core.RunWindowsServer(Host)
 		wg.Done()
 	}()
+
 	//创建长连接
 	var server conn.WsServer
 	op := &conn.WsServerOptions{
