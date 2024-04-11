@@ -20,6 +20,8 @@ func (*GroupRouter) InitGroupRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		groupRouter.PUT("group_update", GroupController.UpdateGroup)
 		groupRouter.DELETE("group_delete", GroupController.DeleteGroup)
 		groupRouter.DELETE("group_delete_user", GroupController.DeleteGroupUser)
+
+		//获取用户信息
 		groupRouter.GET("/get_userbyid", GroupController.GetUserByUserID)
 	}
 	return groupRouter
