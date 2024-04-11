@@ -68,8 +68,13 @@ func (c AuthController) DelSessionNum(ctx *gin.Context) {
 	err = ctx.ShouldBindJSON(&userId)
 	if err != nil {
 		global.Logger.Error("解析参数出错，" + err.Error())
+		ctx.JSON(200, gin.H{
+			"code":    200,
+			"message": "解析参数出错",
+		})
+		return
 	}
-
+	fmt.Println(userId.Id)
 	_, err = global.Redis.HDel(context.Background(), im.GetRedisKeyUserSessionNum(claims.UserID), strconv.Itoa(userId.Id)).Result()
 	if err != nil {
 		global.Logger.Error("删除会话数目，" + err.Error())
@@ -77,6 +82,7 @@ func (c AuthController) DelSessionNum(ctx *gin.Context) {
 			"code":    200,
 			"message": "删除失败",
 		})
+		return
 	}
 
 	ctx.JSON(200, gin.H{
